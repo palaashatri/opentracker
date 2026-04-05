@@ -1,0 +1,169 @@
+<div class="timeline-bar" role="toolbar" aria-label="Playback timeline controls">
+
+  <!-- ── Left: Live / Historic toggle ─────────────────────── -->
+  <div class="tl-section tl-section--left">
+
+    <button
+      class="live-btn"
+      [class.live-btn--active]="isLive"
+      (click)="goLive()"
+      [attr.aria-pressed]="isLive"
+      title="Return to live view">
+      <span class="live-btn-dot" aria-hidden="true"></span>
+      LIVE
+    </button>
+
+    <div class="tl-divider" aria-hidden="true"></div>
+
+    <!-- From / To date inputs -->
+    <div class="date-range" [class.date-range--disabled]="isLive">
+      <div class="date-field">
+        <label class="date-label" for="tl-from">From</label>
+        <input
+          id="tl-from"
+          type="datetime-local"
+          class="date-input"
+          [value]="fromValue"
+          (change)="onFromChange($any($event.target).value)"
+          [disabled]="isLive"
+          aria-label="Start time">
+      </div>
+
+      <span class="date-arrow" aria-hidden="true">
+        <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+          <path d="M1 5H11M8 2L11 5L8 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+
+      <div class="date-field">
+        <label class="date-label" for="tl-to">To</label>
+        <input
+          id="tl-to"
+          type="datetime-local"
+          class="date-input"
+          [value]="toValue"
+          (change)="onToChange($any($event.target).value)"
+          [disabled]="isLive"
+          aria-label="End time">
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Center: Playback controls + scrubber ─────────────── -->
+  <div class="tl-section tl-section--center">
+
+    <!-- Current time display -->
+    <div class="time-display" aria-live="polite" aria-label="Current playback time">
+      <span class="time-value">{{ currentTime | date:'HH:mm:ss' }}</span>
+      <span class="time-date">{{ currentTime | date:'dd MMM yyyy' }}</span>
+    </div>
+
+    <!-- Transport controls -->
+    <div class="transport-controls" role="group" aria-label="Playback controls">
+
+      <!-- Skip to start -->
+      <button
+        class="transport-btn"
+        (click)="seekToStart()"
+        [disabled]="isLive"
+        title="Skip to start"
+        aria-label="Skip to start">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 2V14M5.5 8L12.5 3V13L5.5 8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <!-- Step back 5 min -->
+      <button
+        class="transport-btn"
+        (click)="stepBack()"
+        [disabled]="isLive"
+        title="Step back"
+        aria-label="Step back 5 minutes">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M10.5 4L3.5 8L10.5 12V4Z" fill="currentColor" opacity="0.9"/>
+          <path d="M13.5 4L6.5 8L13.5 12V4Z" fill="currentColor" opacity="0.5"/>
+        </svg>
+      </button>
+
+      <!-- Play / Pause -->
+      <button
+        class="transport-btn transport-btn--primary"
+        (click)="togglePlayback()"
+        [disabled]="isLive"
+        [attr.aria-label]="isPlaying ? 'Pause' : 'Play'"
+        [title]="isPlaying ? 'Pause' : 'Play'">
+        @if (isPlaying) {
+          <!-- Pause icon -->
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <rect x="3.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/>
+            <rect x="9.5" y="2.5" width="3" height="11" rx="1" fill="currentColor"/>
+          </svg>
+        } @else {
+          <!-- Play icon -->
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M4 2.5L13 8L4 13.5V2.5Z" fill="currentColor"/>
+          </svg>
+        }
+      </button>
+
+      <!-- Step forward 5 min -->
+      <button
+        class="transport-btn"
+        (click)="stepForward()"
+        [disabled]="isLive"
+        title="Step forward"
+        aria-label="Step forward 5 minutes">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M5.5 4L12.5 8L5.5 12V4Z" fill="currentColor" opacity="0.5"/>
+          <path d="M2.5 4L9.5 8L2.5 12V4Z" fill="currentColor" opacity="0.9"/>
+        </svg>
+      </button>
+
+      <!-- Skip to end -->
+      <button
+        class="transport-btn"
+        (click)="seekToEnd()"
+        [disabled]="isLive"
+        title="Skip to end"
+        aria-label="Skip to end">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M13 2V14M10.5 8L3.5 3V13L10.5 8Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Scrubber track -->
+    <div class="scrubber-wrapper" [class.scrubber-wrapper--disabled]="isLive">
+      <input
+        type="range"
+        class="scrubber"
+        min="0"
+        max="100"
+        step="0.1"
+        [value]="scrubberPosition"
+        (input)="onScrubberInput($event)"
+        [disabled]="isLive"
+        aria-label="Playback position">
+    </div>
+  </div>
+
+  <!-- ── Right: Speed control ──────────────────────────────── -->
+  <div class="tl-section tl-section--right">
+    <span class="speed-label">Speed</span>
+    <div class="speed-controls" role="group" aria-label="Playback speed">
+      @for (speed of speedOptions; track speed) {
+        <button
+          class="speed-btn"
+          [class.speed-btn--active]="currentSpeed === speed"
+          (click)="setSpeed(speed)"
+          [disabled]="isLive"
+          [attr.aria-pressed]="currentSpeed === speed"
+          [title]="speed + 'x playback speed'">
+          {{ speed }}×
+        </button>
+      }
+    </div>
+  </div>
+
+</div>

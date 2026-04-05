@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java -version)",
+      "Bash(gradle --version)",
+      "Bash(npm --version)",
+      "Bash(ng version:*)",
+      "Bash(./gradlew :backend:shared:compileJava)",
+      "Bash(curl -s -L -o /tmp/gradle-wrapper.jar \"https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar\")",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew :backend:shared:compileJava)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew :backend:ingestion:compileJava)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew :backend:stream-processor:compileJava :backend:geospatial:compileJava :backend:gateway:compileJava)",
+      "Bash(grep -l \"toolchain\" /Users/palaashatri/Desktop/digital-twin/backend/*/build.gradle.kts)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew build -x test)",
+      "Bash(chmod +x /Users/palaashatri/Desktop/digital-twin/run.sh)",
+      "Bash(npm install:*)",
+      "Bash(sed -i '' 's/\\\\[plugins\\\\]/predict4java = { module = \"uk.me.g4dpz:predict4java\", version.ref = \"predict4java\" }\\\\n\\\\n[plugins]/' /Users/palaashatri/Desktop/digital-twin/gradle/libs.versions.toml)",
+      "Bash(mkdir -p /Users/palaashatri/Desktop/digital-twin/backend/ingestion/src/main/java/com/digitaltwin/ingestion/feed/adsb)",
+      "Bash(mkdir -p /Users/palaashatri/Desktop/digital-twin/backend/ingestion/src/main/java/com/digitaltwin/ingestion/feed/aishub)",
+      "Bash(mkdir -p /Users/palaashatri/Desktop/digital-twin/backend/ingestion/src/main/java/com/digitaltwin/ingestion/feed/satellite)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew :backend:ingestion:compileJava --no-daemon -x test)",
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew build -x test --no-daemon)"
+    ]
+  }
+}

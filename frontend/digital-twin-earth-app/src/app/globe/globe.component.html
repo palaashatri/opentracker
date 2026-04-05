@@ -1,0 +1,160 @@
+<div class="globe-container">
+
+  <!-- ══════════════════════════════════════════════════════════
+       Cesium 3D Viewport (full-screen, behind all HUD chrome)
+  ══════════════════════════════════════════════════════════ -->
+  <div #cesiumContainer class="cesium-viewport"></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       Loading Overlay
+  ══════════════════════════════════════════════════════════ -->
+  <div class="loading-overlay" [class.hidden]="!isLoading" aria-hidden="true">
+    <div class="loading-content">
+      <div class="loading-globe">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+          <circle cx="32" cy="32" r="28" stroke="#0A84FF" stroke-width="1.5"
+                  stroke-dasharray="44 132" stroke-linecap="round"
+                  class="globe-spinner-arc"/>
+          <ellipse cx="32" cy="32" rx="12" ry="28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <line x1="4" y1="32" x2="60" y2="32" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        </svg>
+      </div>
+      <p class="loading-label">Digital Twin Earth</p>
+      <p class="loading-sub">Initializing globe engine…</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       Top Navigation Bar (pill-shaped, centered)
+  ══════════════════════════════════════════════════════════ -->
+  <header class="top-bar" role="banner">
+    <!-- App identity -->
+    <div class="app-identity">
+      <span class="app-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="9" stroke="#0A84FF" stroke-width="1.2"/>
+          <ellipse cx="10" cy="10" rx="4" ry="9" stroke="#0A84FF" stroke-width="1" stroke-dasharray="2 1.5" opacity="0.6"/>
+          <line x1="1" y1="10" x2="19" y2="10" stroke="#0A84FF" stroke-width="1" opacity="0.6"/>
+        </svg>
+      </span>
+      <span class="app-name">Digital Twin Earth</span>
+    </div>
+
+    <div class="top-bar-divider" aria-hidden="true"></div>
+
+    <!-- Connection status -->
+    <div class="status-indicator" [attr.aria-label]="statusLabel">
+      <span class="status-dot"
+            [class.status-dot--connected]="connectionStatus === 'connected'"
+            [class.status-dot--connecting]="connectionStatus === 'connecting'"
+            [class.status-dot--error]="connectionStatus === 'error'">
+      </span>
+      <span class="status-label">{{ statusLabel }}</span>
+    </div>
+
+    <div class="top-bar-divider" aria-hidden="true"></div>
+
+    <!-- Entity counters -->
+    <div class="entity-counters" aria-label="Entity counts">
+      <div class="counter-chip counter-chip--flights" [class.counter-chip--active]="showFlights">
+        <svg width="14" height="12" viewBox="0 0 14 12" fill="none" class="counter-icon">
+          <path d="M1 8.5L4.5 5.5L5.5 3C5.5 3 6.5 1 8 1.5C9 2 8.5 3.5 8.5 3.5L7 5H10.5C10.5 5 12 4.5 12.5 5.5C13 6.5 11.5 7 11.5 7H7.5L6.5 8.5H9C9 8.5 10 8.5 10 9.5C10 10.5 9 10.5 9 10.5H4L2 10.5L1 8.5Z"
+                fill="currentColor"/>
+        </svg>
+        <span>{{ flightCount | number }}</span>
+        <span class="counter-unit">flights</span>
+      </div>
+
+      <div class="counter-chip counter-chip--ships" [class.counter-chip--active]="showShips">
+        <svg width="14" height="12" viewBox="0 0 14 12" fill="none" class="counter-icon">
+          <path d="M2 7L7 4L12 7V9C12 9.5 11.5 10 11 10H3C2.5 10 2 9.5 2 9V7Z" fill="currentColor" opacity="0.8"/>
+          <path d="M5 4V2H9V4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <line x1="7" y1="1" x2="7" y2="2.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M0.5 10.5C2.5 12.5 4.5 10.5 7 10.5C9.5 10.5 11.5 12.5 13.5 10.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        <span>{{ shipCount | number }}</span>
+        <span class="counter-unit">vessels</span>
+      </div>
+
+      <div class="counter-chip counter-chip--satellites" [class.counter-chip--active]="showSatellites">
+        <span class="counter-icon" aria-hidden="true">🛰️</span>
+        <span>{{ satelliteCount | number }}</span>
+        <span class="counter-unit">satellites</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════
+       Left Sidebar (Layers + Stats)
+  ══════════════════════════════════════════════════════════ -->
+  <aside class="sidebar-left" aria-label="Map layers and statistics">
+    <app-layer-toggle
+      [showFlights]="showFlights"
+      [showShips]="showShips"
+      [showSatellites]="showSatellites"
+      (layerToggled)="onLayerToggle($event)">
+    </app-layer-toggle>
+
+    <app-stats-panel
+      [flightCount]="flightCount"
+      [shipCount]="shipCount"
+      [satelliteCount]="satelliteCount"
+      [connectionStatus]="connectionStatus">
+    </app-stats-panel>
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════════════
+       Entity Detail Panel (Right side, when entity selected)
+  ══════════════════════════════════════════════════════════ -->
+  @if (selectedFlight || selectedShip) {
+    <aside class="sidebar-right" aria-label="Selected entity details">
+      <app-entity-detail
+        [flight]="selectedFlight"
+        [vessel]="selectedShip"
+        (closed)="closeDetail()">
+      </app-entity-detail>
+    </aside>
+  }
+
+  <!-- ══════════════════════════════════════════════════════════
+       Bottom Timeline Bar
+  ══════════════════════════════════════════════════════════ -->
+  <footer class="timeline-footer" aria-label="Playback timeline">
+    <app-timeline></app-timeline>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════
+       Zoom controls (bottom-right, above attribution)
+  ══════════════════════════════════════════════════════════ -->
+  <div class="zoom-controls" aria-label="Zoom controls">
+    <button class="zoom-btn" (click)="globe.zoomIn()"  aria-label="Zoom in"  title="Zoom in">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button class="zoom-btn" (click)="globe.zoomOut()" aria-label="Zoom out" title="Zoom out">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="zoom-divider"></div>
+    <button class="zoom-btn zoom-btn--home" (click)="globe.zoomToHome()" aria-label="Reset view" title="Reset view">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+        <ellipse cx="8" cy="8" rx="2.2" ry="5.5" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+        <line x1="2.5" y1="8" x2="13.5" y2="8" stroke="currentColor" stroke-width="1" opacity="0.6"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       Bottom-right attribution (minimal)
+  ══════════════════════════════════════════════════════════ -->
+  <div class="attribution" aria-label="Map attribution">
+    Map data © OpenStreetMap contributors · CesiumJS
+  </div>
+
+</div>

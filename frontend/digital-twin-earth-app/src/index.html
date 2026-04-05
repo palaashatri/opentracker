@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Digital Twin Earth</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Real-time 3D globe tracking live flights and ship movements worldwide">
+  <link rel="icon" type="image/svg+xml" href="assets/globe-icon.svg">
+</head>
+<body>
+  <!-- CESIUM_BASE_URL must be set before Cesium.js is executed.
+       The webpack DefinePlugin only affects bundled code, not the Cesium.js script tag. -->
+  <script>window.CESIUM_BASE_URL = '/cesium';</script>
+  <app-root></app-root>
+</body>
+</html>

@@ -1,0 +1,50 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: ingestion
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: "1"
+      retries: 3
+      properties:
+        max.block.ms: 5000
+
+ingestion:
+  feed:
+    flight: ${INGESTION_FEED_FLIGHT:mock}
+    ship: ${INGESTION_FEED_SHIP:mock}
+  simulation:
+    aircraft-count: ${INGESTION_SIM_AIRCRAFT:500}
+    vessel-count: ${INGESTION_SIM_VESSELS:200}
+    interval-ms: ${INGESTION_SIM_INTERVAL_MS:1000}
+    batch-size: ${INGESTION_SIM_BATCH:50}
+  opensky:
+    username: ${OPENSKY_USERNAME:}
+    password: ${OPENSKY_PASSWORD:}
+  aisstream:
+    api-key: ${AISSTREAM_API_KEY:}
+  adsb:
+    url: ${ADSB_URL:https://public-api.adsbexchange.com/VirtualRadar/AircraftList.json}
+  aishub:
+    username: ${AISHUB_USERNAME:}
+    url: ${AISHUB_URL:https://data.aishub.net/ws.php}
+  satellite:
+    enabled: ${SATELLITES_ENABLED:true}
+    tle-url: ${CELESTRAK_TLE_URL:https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle}
+
+mock:
+  seed: ${MOCK_SEED:42}
+  flights-count: ${MOCK_FLIGHTS_COUNT:500}
+  ships-count: ${MOCK_SHIPS_COUNT:200}
+  satellites-count: ${MOCK_SATELLITES_COUNT:100}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

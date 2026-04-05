@@ -1,0 +1,33 @@
+# Spring profile: realdata
+#
+# Activates live data feed providers instead of the built-in simulators.
+#
+# How to enable
+# -------------
+#   SPRING_PROFILES_ACTIVE=realdata
+#   AISSTREAM_API_KEY=<your key from https://aisstream.io>
+#
+# OpenSky Network is used anonymously by default (no key required).
+# For a higher rate limit, also set:
+#   OPENSKY_USERNAME=<username>
+#   OPENSKY_PASSWORD=<password>
+#
+# To switch to ADSBExchange + AISHub instead of OpenSky + AISStream, set:
+#   INGESTION_FEED_FLIGHT=adsb
+#   INGESTION_FEED_SHIP=aishub
+#   AISHUB_USERNAME=<your aishub.net username>
+#
+# The scheduler interval is raised to 30 s to respect OpenSky's anonymous
+# rate limit of ~400 requests per 10 minutes.  AISStream events are
+# buffered in memory between scheduler ticks, so the interval only affects
+# how often buffered ship events are flushed to Kafka — not the WebSocket
+# data throughput.
+
+ingestion:
+  feed:
+    flight: opensky
+    ship: aisstream
+  simulation:
+    interval-ms: 30000
+  satellite:
+    enabled: true

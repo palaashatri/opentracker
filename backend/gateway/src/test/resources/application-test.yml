@@ -1,0 +1,10 @@
+gateway:
+  geospatial-url: http://localhost:9999
+  api-key: dev-key
+  cors:
+    allowed-origins: http://localhost:4200
+
+spring:
+  kafka:
+    consumer:
+      auto-offset-reset: earliest

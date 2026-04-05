@@ -1,0 +1,470 @@
+// timeline.component.scss — Apple HIG Liquid Glass
+
+// ============================================================
+// Timeline Bar
+// ============================================================
+.timeline-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 10px 20px;
+  border-radius: var(--border-radius-xl);
+
+  // Liquid glass
+  background: rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+// ── Sections ─────────────────────────────────────────────────
+.tl-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &--left {
+    flex: 0 0 auto;
+  }
+
+  &--center {
+    flex: 1;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 20px;
+  }
+
+  &--right {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+}
+
+.tl-divider {
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.10);
+  flex-shrink: 0;
+}
+
+// ============================================================
+// Live Button
+// ============================================================
+.live-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--border-radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--color-text-secondary);
+  font-family: var(--font-system);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.20);
+    color: var(--color-text-primary);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &--active {
+    background: rgba(255, 69, 58, 0.15);
+    border-color: rgba(255, 69, 58, 0.35);
+    color: #FF453A;
+
+    &:hover {
+      background: rgba(255, 69, 58, 0.22);
+      border-color: rgba(255, 69, 58, 0.50);
+    }
+
+    .live-btn-dot {
+      background: #FF453A;
+      box-shadow: 0 0 6px #FF453A;
+      animation: pulse-red 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+.live-btn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-quaternary);
+  transition: all var(--transition-normal);
+  flex-shrink: 0;
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 4px #FF453A; }
+  50%       { box-shadow: 0 0 10px #FF453A, 0 0 18px rgba(255, 69, 58, 0.40); }
+}
+
+// ============================================================
+// Date Range Inputs
+// ============================================================
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity var(--transition-fast);
+
+  &--disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+}
+
+.date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.date-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.date-input {
+  // Strip all native browser chrome
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 5px 8px;
+  width: 148px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent-blue);
+    background: rgba(10, 132, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+  }
+
+  // Webkit datetime-local styling
+  &::-webkit-calendar-picker-indicator {
+    filter: invert(1) opacity(0.35);
+    cursor: pointer;
+    padding: 0;
+    margin-left: 2px;
+
+    &:hover { opacity: 0.7; }
+  }
+
+  &::-webkit-datetime-edit {
+    color: var(--color-text-primary);
+  }
+
+  &::-webkit-datetime-edit-fields-wrapper {
+    background: transparent;
+  }
+
+  &::-webkit-datetime-edit-text {
+    color: var(--color-text-tertiary);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.date-arrow {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+// ============================================================
+// Time Display (center top)
+// ============================================================
+.time-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  justify-content: center;
+}
+
+.time-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.time-date {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+// ============================================================
+// Transport Controls
+// ============================================================
+.transport-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+
+.transport-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: var(--color-text-primary);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.92);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  &:disabled {
+    opacity: 0.30;
+    cursor: not-allowed;
+  }
+
+  // Primary play/pause button
+  &--primary {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius-md);
+    background: rgba(10, 132, 255, 0.20);
+    border-color: rgba(10, 132, 255, 0.35);
+    color: var(--color-accent-blue);
+
+    &:hover:not(:disabled) {
+      background: rgba(10, 132, 255, 0.30);
+      border-color: rgba(10, 132, 255, 0.55);
+      box-shadow: 0 0 16px rgba(10, 132, 255, 0.25);
+      color: var(--color-accent-blue);
+    }
+
+    &:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: var(--color-text-quaternary);
+    }
+  }
+}
+
+// ============================================================
+// Scrubber (range input)
+// ============================================================
+.scrubber-wrapper {
+  width: 100%;
+  padding: 0 4px;
+  transition: opacity var(--transition-fast);
+
+  &--disabled {
+    opacity: 0.25;
+    pointer-events: none;
+  }
+}
+
+.scrubber {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+
+  // WebKit track
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+  }
+
+  // WebKit thumb
+  &::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.40),
+      0 0 0 2px rgba(10, 132, 255, 0.50);
+    margin-top: -5px;
+    cursor: grab;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+
+    &:active { cursor: grabbing; transform: scale(1.2); }
+  }
+
+  // Firefox track
+  &::-moz-range-track {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    border: none;
+  }
+
+  // Firefox thumb
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid rgba(10, 132, 255, 0.50);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.40);
+    cursor: grab;
+
+    &:active { cursor: grabbing; }
+  }
+
+  &:hover::-webkit-slider-thumb {
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.50),
+      0 0 0 3px rgba(10, 132, 255, 0.60);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-blue);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  &:disabled { cursor: not-allowed; }
+}
+
+// ============================================================
+// Speed Controls
+// ============================================================
+.speed-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+.speed-controls {
+  display: flex;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-sm);
+  padding: 3px;
+}
+
+.speed-btn {
+  padding: 4px 9px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-system);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.10);
+    color: var(--color-text-primary);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+
+  &--active {
+    background: var(--color-accent-blue) !important;
+    border-color: transparent;
+    color: white !important;
+    box-shadow: 0 2px 8px rgba(10, 132, 255, 0.40);
+  }
+
+  &:disabled {
+    opacity: 0.30;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================================
+// Responsive
+// ============================================================
+@media (max-width: 768px) {
+  .timeline-bar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--border-radius-lg);
+  }
+
+  .tl-section {
+    width: 100%;
+    justify-content: center;
+
+    &--center {
+      padding: 0;
+    }
+  }
+
+  .tl-divider {
+    display: none;
+  }
+
+  .date-input {
+    width: 130px;
+    font-size: 11px;
+  }
+
+  .time-value {
+    font-size: 16px;
+  }
+}
