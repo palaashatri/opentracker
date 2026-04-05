@@ -24,6 +24,9 @@ export class LayerToggleComponent {
   @Input() showFlights    = true;
   @Input() showShips      = true;
   @Input() showSatellites = true;
+  @Input() showTerrain    = true;
+  @Input() showBuildings  = false;
+  @Input() showWeather    = false;
 
   @Output() layerToggled = new EventEmitter<LayerToggleEvent>();
 

@@ -118,6 +118,36 @@
       box-shadow: 0 0 10px rgba(255, 214, 10, 0.25);
     }
   }
+
+  &--terrain {
+    background: rgba(255, 159, 10, 0.15);
+    color: #FF9F0A;
+
+    .layer-row--active & {
+      background: rgba(255, 159, 10, 0.22);
+      box-shadow: 0 0 10px rgba(255, 159, 10, 0.25);
+    }
+  }
+
+  &--buildings {
+    background: rgba(90, 200, 250, 0.15);
+    color: #5AC8FA;
+
+    .layer-row--active & {
+      background: rgba(90, 200, 250, 0.22);
+      box-shadow: 0 0 10px rgba(90, 200, 250, 0.25);
+    }
+  }
+
+  &--weather {
+    background: rgba(191, 90, 242, 0.16);
+    color: #BF5AF2;
+
+    .layer-row--active & {
+      background: rgba(191, 90, 242, 0.24);
+      box-shadow: 0 0 10px rgba(191, 90, 242, 0.25);
+    }
+  }
 }
 
 .layer-text {
@@ -213,6 +243,24 @@
   background: #FFD60A;
   border-color: transparent;
   box-shadow: 0 0 12px rgba(255, 214, 10, 0.35);
+}
+
+.ios-toggle--orange input:checked ~ .ios-toggle__track {
+  background: #FF9F0A;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(255, 159, 10, 0.35);
+}
+
+.ios-toggle--teal input:checked ~ .ios-toggle__track {
+  background: #5AC8FA;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(90, 200, 250, 0.35);
+}
+
+.ios-toggle--weather input:checked ~ .ios-toggle__track {
+  background: #BF5AF2;
+  border-color: transparent;
+  box-shadow: 0 0 12px rgba(191, 90, 242, 0.35);
 }
 
 // Hover micro-interaction
