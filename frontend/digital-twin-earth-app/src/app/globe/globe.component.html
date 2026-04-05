@@ -120,6 +120,7 @@
       </button>
       @if (searchOpen) {
         <input
+          #searchInput
           id="globe-search"
           class="search-input"
           type="search"
@@ -127,7 +128,7 @@
           autocomplete="off"
           spellcheck="false"
           [value]="searchQuery"
-          (input)="onSearchInput(($event.target as HTMLInputElement).value)"
+          (input)="onSearchInput(searchInput.value)"
           (keydown.escape)="closeSearch()"
           aria-label="Search entities and places" />
         @if (searchResults.length > 0 || searchLoading) {
