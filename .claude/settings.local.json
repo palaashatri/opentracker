@@ -19,7 +19,8 @@
       "Bash(mkdir -p /Users/palaashatri/Desktop/digital-twin/backend/ingestion/src/main/java/com/digitaltwin/ingestion/feed/aishub)",
       "Bash(mkdir -p /Users/palaashatri/Desktop/digital-twin/backend/ingestion/src/main/java/com/digitaltwin/ingestion/feed/satellite)",
       "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew :backend:ingestion:compileJava --no-daemon -x test)",
-      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew build -x test --no-daemon)"
+      "Bash(JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home ./gradlew build -x test --no-daemon)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

@@ -103,6 +103,52 @@
         <span class="counter-unit">satellites</span>
       </div>
     </div>
+
+    <!-- Search bar -->
+    <div class="top-bar-divider" aria-hidden="true"></div>
+    <div class="search-wrap" [class.search-wrap--open]="searchOpen">
+      <button
+        class="search-toggle"
+        type="button"
+        aria-label="Search flights, vessels, places"
+        title="Search (press /)"
+        (click)="toggleSearch()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="10" y1="10" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      @if (searchOpen) {
+        <input
+          id="globe-search"
+          class="search-input"
+          type="search"
+          placeholder="Search flights, vessels, places…"
+          autocomplete="off"
+          spellcheck="false"
+          [value]="searchQuery"
+          (input)="onSearchInput(($event.target as HTMLInputElement).value)"
+          (keydown.escape)="closeSearch()"
+          aria-label="Search entities and places" />
+        @if (searchResults.length > 0 || searchLoading) {
+          <div class="search-results" role="listbox">
+            @if (searchLoading) {
+              <div class="search-result search-result--loading">Searching…</div>
+            }
+            @for (result of searchResults; track result.label) {
+              <button
+                class="search-result"
+                type="button"
+                role="option"
+                (click)="result.action(); closeSearch()">
+                <span class="search-result__label">{{ result.label }}</span>
+                <span class="search-result__sub">{{ result.sub }}</span>
+              </button>
+            }
+          </div>
+        }
+      }
+    </div>
   </header>
 
   <!-- ══════════════════════════════════════════════════════════

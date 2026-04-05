@@ -449,6 +449,119 @@
 }
 
 // ============================================================
+// Search
+// ============================================================
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.search-input {
+  width: 220px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 13px;
+  font-family: var(--font-system);
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+
+  &::placeholder { color: rgba(255, 255, 255, 0.35); }
+
+  &:focus {
+    background: rgba(255, 255, 255, 0.13);
+    border-color: rgba(10, 132, 255, 0.6);
+  }
+
+  // Remove default search input decorations
+  &::-webkit-search-decoration,
+  &::-webkit-search-cancel-button { display: none; }
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: rgba(6, 9, 18, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 200;
+  min-width: 260px;
+}
+
+.search-result {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+  gap: 2px;
+
+  &:hover { background: rgba(255, 255, 255, 0.08); }
+
+  &--loading {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 12px;
+    font-style: italic;
+    cursor: default;
+
+    &:hover { background: transparent; }
+  }
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  &__sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.40);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+}
+
+// ============================================================
 // Responsive — compact on smaller viewports
 // ============================================================
 @media (max-width: 768px) {

@@ -6,6 +6,7 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  HostListener,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { Subject, Subscription, interval } from 'rxjs';
@@ -70,8 +71,14 @@ export class GlobeComponent implements OnInit, OnDestroy {
   isLoadingStreetPhotos = false;
   streetPhotos: StreetPhoto[] = [];
 
-  selectedFlight: AircraftPositionDto | null = null;
-  selectedShip:   VesselPositionDto   | null = null;
+  selectedFlight:    AircraftPositionDto    | null = null;
+  selectedShip:      VesselPositionDto      | null = null;
+  selectedSatellite: SatellitePositionDto   | null = null;
+
+  searchOpen    = false;
+  searchQuery   = '';
+  searchResults: Array<{ label: string; sub: string; action: () => void }> = [];
+  searchLoading = false;
 
   private readonly destroy$ = new Subject<void>();
   private flightSub?:    Subscription;
@@ -297,7 +304,129 @@ export class GlobeComponent implements OnInit, OnDestroy {
   closeDetail(): void {
     this.selectedFlight = null;
     this.selectedShip   = null;
+    if (this.selectedSatellite) {
+      this.globe.clearSatelliteFootprint(this.selectedSatellite.noradId);
+      this.selectedSatellite = null;
+    }
     this.globe.clearTracks();
+    this.cdr.markForCheck();
+  }
+
+  selectSatellite(dto: SatellitePositionDto | null): void {
+    if (this.selectedSatellite) {
+      this.globe.clearSatelliteFootprint(this.selectedSatellite.noradId);
+    }
+    this.selectedSatellite = dto;
+    if (dto) {
+      this.globe.showSatelliteFootprint(dto.noradId, dto.lat, dto.lon, dto.altitudeKm);
+    }
+    this.cdr.markForCheck();
+  }
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+    switch (event.key.toLowerCase()) {
+      case 'f':
+        this.onLayerToggle({ layer: 'flights', visible: !this.showFlights });
+        break;
+      case 's':
+        this.onLayerToggle({ layer: 'ships', visible: !this.showShips });
+        break;
+      case 't':
+        this.onLayerToggle({ layer: 'satellites', visible: !this.showSatellites });
+        break;
+      case 'h':
+        this.globe.zoomToHome();
+        break;
+      case 'r':
+        this.globe.recoverEarthViewIfNeeded();
+        break;
+      case '+':
+      case '=':
+        this.globe.zoomIn();
+        break;
+      case '-':
+        this.globe.zoomOut();
+        break;
+      case '/':
+        event.preventDefault();
+        this.searchOpen = true;
+        this.cdr.markForCheck();
+        setTimeout(() => document.getElementById('globe-search')?.focus(), 50);
+        break;
+      case 'escape':
+        if (this.searchOpen) {
+          this.searchOpen    = false;
+          this.searchQuery   = '';
+          this.searchResults = [];
+          this.cdr.markForCheck();
+        } else if (this.selectedFlight || this.selectedShip || this.selectedSatellite) {
+          this.closeDetail();
+          this.selectSatellite(null);
+        }
+        break;
+    }
+  }
+
+  // ── Search ─────────────────────────────────────────────────
+
+  toggleSearch(): void {
+    this.searchOpen = !this.searchOpen;
+    this.cdr.markForCheck();
+  }
+
+  onSearchInput(query: string): void {
+    this.searchQuery = query;
+    if (!query.trim()) {
+      this.searchResults = [];
+      this.cdr.markForCheck();
+      return;
+    }
+    const q = query.trim().toLowerCase();
+
+    // Local entity search first
+    const results: Array<{ label: string; sub: string; action: () => void }> = [];
+    this.globe.searchEntities(q).forEach(hit => results.push(hit));
+
+    if (results.length > 0) {
+      this.searchResults = results.slice(0, 8);
+      this.cdr.markForCheck();
+      return;
+    }
+
+    // Nominatim geocoding fallback
+    this.searchLoading = true;
+    this.cdr.markForCheck();
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}`, {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'OpenTracker/1.0' },
+    })
+      .then(r => r.json())
+      .then((items: any[]) => {
+        this.searchResults = items.map((item: any) => ({
+          label: item.display_name?.split(',')[0] ?? item.display_name,
+          sub:   item.display_name,
+          action: () => {
+            this.globe.flyTo(parseFloat(item.lat), parseFloat(item.lon), 200_000);
+            this.closeSearch();
+          },
+        }));
+        this.searchLoading = false;
+        this.cdr.markForCheck();
+      })
+      .catch(() => {
+        this.searchLoading = false;
+        this.cdr.markForCheck();
+      });
+  }
+
+  closeSearch(): void {
+    this.searchOpen    = false;
+    this.searchQuery   = '';
+    this.searchResults = [];
     this.cdr.markForCheck();
   }
 

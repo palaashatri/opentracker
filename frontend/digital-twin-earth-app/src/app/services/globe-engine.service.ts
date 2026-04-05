@@ -76,6 +76,52 @@ export class GlobeEngineService {
 
     this.applyTerrainProvider();
 
+    // ── Entity clustering ────────────────────────────────────────────────────
+    const cluster = this.viewer.entities.cluster;
+    cluster.enabled = true;
+    cluster.pixelRange = 48;
+    cluster.minimumClusterSize = 4;
+    cluster.clusterEvent.addEventListener((clusteredEntities: any[], clusterDisplay: any) => {
+      clusterDisplay.billboard.show = false;
+      clusterDisplay.label.show     = false;
+      clusterDisplay.point.show     = true;
+
+      const count    = clusteredEntities.length;
+      const hasFlights    = clusteredEntities.some((e: any) => e.id?.startsWith('flight-'));
+      const hasShips      = clusteredEntities.some((e: any) => e.id?.startsWith('ship-'));
+      const hasSatellites = clusteredEntities.some((e: any) => e.id?.startsWith('satellite-'));
+
+      let color: any;
+      if (hasFlights && !hasShips && !hasSatellites) {
+        color = Cesium.Color.fromCssColorString('#0A84FF').withAlpha(0.88);
+      } else if (hasShips && !hasFlights && !hasSatellites) {
+        color = Cesium.Color.fromCssColorString('#30D158').withAlpha(0.88);
+      } else if (hasSatellites && !hasFlights && !hasShips) {
+        color = Cesium.Color.fromCssColorString('#FFD60A').withAlpha(0.88);
+      } else {
+        color = Cesium.Color.fromCssColorString('#5AC8FA').withAlpha(0.88);
+      }
+
+      const size = count < 10 ? 28 : count < 50 ? 36 : count < 200 ? 44 : 52;
+      clusterDisplay.point.pixelSize          = size;
+      clusterDisplay.point.color              = color;
+      clusterDisplay.point.outlineColor       = Cesium.Color.WHITE.withAlpha(0.55);
+      clusterDisplay.point.outlineWidth       = 1.5;
+      clusterDisplay.point.disableDepthTestDistance = Number.POSITIVE_INFINITY;
+
+      // Cluster count label
+      clusterDisplay.label.show              = true;
+      clusterDisplay.label.text              = count >= 1000 ? `${Math.floor(count / 1000)}k` : String(count);
+      clusterDisplay.label.font              = '600 11px system-ui, -apple-system, sans-serif';
+      clusterDisplay.label.fillColor         = Cesium.Color.WHITE;
+      clusterDisplay.label.style             = Cesium.LabelStyle.FILL;
+      clusterDisplay.label.showBackground    = false;
+      clusterDisplay.label.horizontalOrigin  = Cesium.HorizontalOrigin.CENTER;
+      clusterDisplay.label.verticalOrigin    = Cesium.VerticalOrigin.CENTER;
+      clusterDisplay.label.pixelOffset       = new Cesium.Cartesian2(0, 0.5);
+      clusterDisplay.label.disableDepthTestDistance = Number.POSITIVE_INFINITY;
+    });
+
     // ── Scene aesthetics ─────────────────────────────────────────────────────
     const scene = this.viewer.scene;
 
@@ -115,13 +161,32 @@ export class GlobeEngineService {
       return;
     }
 
-    // We have no Ion token and no paid terrain API key, so always use the ellipsoid.
-    // ArcGISTiledElevationTerrainProvider requires authentication — without a key every
-    // terrain tile returns 403, causing per-frame loadImage errors and (with
-    // depthTestAgainstTerrain=true) making the globe surface invisible.
+    // Check for optional Ion token (set via window.CESIUM_ION_TOKEN or localStorage)
+    const ionToken = (window as any)['CESIUM_ION_TOKEN']
+      ?? localStorage.getItem('cesiumIonToken')
+      ?? '';
+
+    if (ionToken && typeof Cesium.createWorldTerrainAsync === 'function') {
+      Cesium.Ion.defaultAccessToken = ionToken;
+      Cesium.createWorldTerrainAsync()
+        .then((provider: any) => {
+          this.viewer.terrainProvider = provider;
+          this.terrainState = 'ready';
+          this.terrainHint  = 'High-resolution Cesium World Terrain loaded.';
+          this.viewer.scene.globe.depthTestAgainstTerrain = true;
+        })
+        .catch(() => {
+          this.viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
+          this.terrainState = 'fallback';
+          this.terrainHint  = 'Ion terrain token invalid or request failed. Using flat ellipsoid.';
+        });
+      return;
+    }
+
+    // No token — flat ellipsoid is safe, reliable, and has no external dependency
     this.viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
     this.terrainState = 'fallback';
-    this.terrainHint = 'Running on flat ellipsoid terrain. Add a Cesium Ion token to enable high-resolution terrain.';
+    this.terrainHint  = 'Running on flat ellipsoid terrain. Set window.CESIUM_ION_TOKEN or localStorage.cesiumIonToken to enable high-resolution terrain.';
   }
 
   // ── Flights ────────────────────────────────────────────────
@@ -173,14 +238,14 @@ export class GlobeEngineService {
           font:       '11px -apple-system, "SF Pro Text", sans-serif',
           fillColor:  Cesium.Color.WHITE.withAlpha(0.95),
           outlineColor: Cesium.Color.BLACK.withAlpha(0.55),
-          outlineWidth: 1,
+          outlineWidth: 2,
           style:      Cesium.LabelStyle.FILL_AND_OUTLINE,
           pixelOffset: new Cesium.Cartesian2(0, -16),
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2.5e6),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
           showBackground:     true,
-          backgroundColor:    Cesium.Color.BLACK.withAlpha(0.42),
-          backgroundPadding:  new Cesium.Cartesian2(6, 3),
+          backgroundColor:    Cesium.Color.fromCssColorString('#06091a').withAlpha(0.78),
+          backgroundPadding:  new Cesium.Cartesian2(8, 4),
           horizontalOrigin:   Cesium.HorizontalOrigin.CENTER,
           verticalOrigin:     Cesium.VerticalOrigin.BOTTOM,
         },
@@ -246,14 +311,14 @@ export class GlobeEngineService {
           font:       '10px -apple-system, "SF Pro Text", sans-serif',
           fillColor:  Cesium.Color.fromCssColorString('#D8FFE7').withAlpha(0.95),
           outlineColor: Cesium.Color.BLACK.withAlpha(0.55),
-          outlineWidth: 1,
+          outlineWidth: 2,
           style:      Cesium.LabelStyle.FILL_AND_OUTLINE,
           pixelOffset: new Cesium.Cartesian2(0, -14),
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1.5e6),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
           showBackground: true,
-          backgroundColor: Cesium.Color.BLACK.withAlpha(0.45),
-          backgroundPadding: new Cesium.Cartesian2(6, 3),
+          backgroundColor: Cesium.Color.fromCssColorString('#06091a').withAlpha(0.78),
+          backgroundPadding: new Cesium.Cartesian2(8, 4),
           horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
           verticalOrigin:   Cesium.VerticalOrigin.BOTTOM,
         },
@@ -634,48 +699,72 @@ export class GlobeEngineService {
         const endLat = point.lat + windLengthDeg * Math.cos(headingRad);
         const endLon = point.lon + windLengthDeg * Math.sin(headingRad);
 
+        // 1. Cloud ellipse — only visible when zoomed in (< 2.5M m)
         const cloudAlpha = Math.min(0.5, Math.max(0.05, point.cloudCover / 220));
         const cloudEntity = this.viewer.entities.add({
           id: `weather-cloud-${index}`,
           position: Cesium.Cartesian3.fromDegrees(point.lon, point.lat, 1400),
           ellipse: {
-            semiMajorAxis: 12000,
-            semiMinorAxis: 7000,
+            semiMajorAxis: 80_000,
+            semiMinorAxis: 50_000,
             material: Cesium.Color.WHITE.withAlpha(cloudAlpha),
             height: 1200,
             outline: false,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 2_500_000),
           },
         });
 
+        // 2. Weather station point — visible at all zoom levels up to 8M m
+        const hasPrecip = point.precipitation > 0.1;
+        const stationColor = hasPrecip
+          ? Cesium.Color.fromCssColorString('#5AC8FA').withAlpha(0.85)
+          : Cesium.Color.fromCssColorString('#FFFFFF').withAlpha(0.75);
+        const stationEntity = this.viewer.entities.add({
+          id: `weather-station-${index}`,
+          position: Cesium.Cartesian3.fromDegrees(point.lon, point.lat, 0),
+          point: {
+            pixelSize: 8,
+            color: stationColor,
+            outlineColor: Cesium.Color.fromCssColorString('#06091a').withAlpha(0.6),
+            outlineWidth: 1,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 8_000_000),
+          },
+        });
+
+        // 3. Wind arrow + label — only when zoomed in close (< 1.2M m)
         const windEntity = this.viewer.entities.add({
           id: `weather-wind-${index}`,
           polyline: {
             positions: [
-              Cesium.Cartesian3.fromDegrees(point.lon, point.lat, 70),
-              Cesium.Cartesian3.fromDegrees(endLon, endLat, 70),
+              Cesium.Cartesian3.fromDegrees(point.lon, point.lat, 0),
+              Cesium.Cartesian3.fromDegrees(endLon, endLat, 0),
             ],
             width: 2,
             material: Cesium.Color.fromCssColorString('#8BD3FF').withAlpha(0.9),
-            clampToGround: false,
+            clampToGround: true,
           },
           label: {
-            text: `${Math.round(point.windSpeed)} m/s · ${Math.round(point.temperature)}C · rain ${point.precipitation.toFixed(1)} mm`,
+            text: `${Math.round(point.windSpeed)} m/s · ${Math.round(point.temperature)}°C · rain ${point.precipitation.toFixed(1)} mm`,
             font: '10px -apple-system, "SF Pro Text", sans-serif',
             fillColor: Cesium.Color.WHITE,
             outlineColor: Cesium.Color.BLACK.withAlpha(0.55),
-            outlineWidth: 1,
+            outlineWidth: 2,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-            showBackground: true,
-            backgroundColor: Cesium.Color.BLACK.withAlpha(0.4),
-            backgroundPadding: new Cesium.Cartesian2(5, 3),
+            showBackground: false,
+            backgroundPadding: new Cesium.Cartesian2(8, 4),
             pixelOffset: new Cesium.Cartesian2(0, -10),
             horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
             verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 1_200_000),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
           },
           position: Cesium.Cartesian3.fromDegrees(endLon, endLat, 90),
         });
 
         this.weatherEntities.set(cloudEntity.id, cloudEntity);
+        this.weatherEntities.set(stationEntity.id, stationEntity);
         this.weatherEntities.set(windEntity.id, windEntity);
       });
     } catch {
@@ -802,6 +891,122 @@ export class GlobeEngineService {
     if (!value) return null;
     const parsed = Number.parseFloat(value.replace('m', '').trim());
     return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  // ── Satellite footprint ────────────────────────────────────
+
+  showSatelliteFootprint(noradId: string, lat: number, lon: number, altitudeKm: number): void {
+    if (!this.viewer) return;
+    this.clearSatelliteFootprint(noradId);
+
+    const re = 6371.0;
+    const r  = re + altitudeKm;
+    const halfAngle         = Math.acos(Math.min(1, re / r));
+    const footprintRadiusM  = re * 1000 * halfAngle;
+
+    const footprintEntity = this.viewer.entities.add({
+      id:       `footprint-${noradId}`,
+      position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+      ellipse: {
+        semiMajorAxis: footprintRadiusM,
+        semiMinorAxis: footprintRadiusM,
+        material:      Cesium.Color.fromCssColorString('#FFD60A').withAlpha(0.07),
+        outline:       true,
+        outlineColor:  Cesium.Color.fromCssColorString('#FFD60A').withAlpha(0.45),
+        outlineWidth:  1,
+        height:        0,
+      },
+    });
+
+    // Sub-satellite point line
+    const nadirLine = this.viewer.entities.add({
+      id: `footprint-nadir-${noradId}`,
+      polyline: {
+        positions: Cesium.Cartesian3.fromDegreesArrayHeights([
+          lon, lat, 0,
+          lon, lat, altitudeKm * 1000,
+        ]),
+        width:    1,
+        material: Cesium.Color.fromCssColorString('#FFD60A').withAlpha(0.25),
+      },
+    });
+
+    this.trackEntities.set(`footprint-${noradId}`, footprintEntity);
+    this.trackEntities.set(`footprint-nadir-${noradId}`, nadirLine);
+  }
+
+  clearSatelliteFootprint(noradId: string): void {
+    if (!this.viewer) return;
+    ['footprint-', 'footprint-nadir-'].forEach(prefix => {
+      const key    = `${prefix}${noradId}`;
+      const entity = this.trackEntities.get(key);
+      if (entity) {
+        this.viewer.entities.remove(entity);
+        this.trackEntities.delete(key);
+      }
+    });
+  }
+
+  // ── Search ─────────────────────────────────────────────────
+
+  searchEntities(query: string): Array<{ label: string; sub: string; action: () => void }> {
+    const results: Array<{ label: string; sub: string; action: () => void }> = [];
+    const q = query.toLowerCase();
+
+    this.flightEntities.forEach((entity, icao24) => {
+      const name = (entity.name ?? icao24).toLowerCase();
+      if (name.includes(q) || icao24.toLowerCase().includes(q)) {
+        results.push({
+          label:  entity.name ?? icao24,
+          sub:    `Flight · ${icao24}`,
+          action: () => this.zoomToFlight(icao24),
+        });
+      }
+    });
+
+    this.shipEntities.forEach((entity, mmsi) => {
+      const name = (entity.name ?? mmsi).toLowerCase();
+      if (name.includes(q) || mmsi.toLowerCase().includes(q)) {
+        results.push({
+          label:  entity.name ?? mmsi,
+          sub:    `Vessel · MMSI ${mmsi}`,
+          action: () => this.zoomToShip(mmsi),
+        });
+      }
+    });
+
+    this.satelliteEntities.forEach((entity, noradId) => {
+      const name = (entity.name ?? noradId).toLowerCase();
+      if (name.includes(q) || noradId.toLowerCase().includes(q)) {
+        results.push({
+          label:  entity.name ?? noradId,
+          sub:    `Satellite · NORAD ${noradId}`,
+          action: () => {
+            if (entity.position) {
+              const pos = entity.position.getValue(Cesium.JulianDate.now());
+              if (pos) {
+                const carto = Cesium.Cartographic.fromCartesian(pos);
+                this.flyTo(
+                  Cesium.Math.toDegrees(carto.latitude),
+                  Cesium.Math.toDegrees(carto.longitude),
+                  8_000_000
+                );
+              }
+            }
+          },
+        });
+      }
+    });
+
+    return results;
+  }
+
+  flyTo(lat: number, lon: number, altitudeM: number): void {
+    if (!this.viewer) return;
+    this.viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(lon, lat, altitudeM),
+      duration:    1.5,
+    });
   }
 
   // ── Stats ──────────────────────────────────────────────────
