@@ -15,6 +15,8 @@ dependencies {
     implementation(libs.flyway.core)
     implementation(libs.flyway.postgres)
     implementation(libs.hibernate.spatial)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.annotations)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.parameter.names)

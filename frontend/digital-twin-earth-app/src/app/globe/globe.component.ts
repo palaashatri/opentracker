@@ -118,28 +118,36 @@ export class GlobeComponent implements OnInit, OnDestroy {
   // ── Lifecycle ──────────────────────────────────────────────
 
   ngOnInit(): void {
-    this.globe.init(this.containerRef.nativeElement);
-    this.isLoading = false;
-    this.cdr.markForCheck();
+    try {
+      this.globe.init(this.containerRef.nativeElement);
+      this.startLiveStreams();
+      this.loadInitialSceneSnapshot();
 
-    this.startLiveStreams();
+      // Refresh HUD counts every 5 s without hammering change detection
+      interval(5_000)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          const counts = this.globe.entityCount;
+          this.flightCount    = counts.flights;
+          this.shipCount      = counts.ships;
+          this.satelliteCount = counts.satellites;
+          this.cdr.markForCheck();
+        });
 
-    // Refresh HUD counts every 5 s without hammering change detection
-    interval(5_000)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        const counts = this.globe.entityCount;
-        this.flightCount    = counts.flights;
-        this.shipCount      = counts.ships;
-        this.satelliteCount = counts.satellites;
-        this.cdr.markForCheck();
-      });
-
-    this.cameraRecoverySub = interval(3_000)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.globe.recoverEarthViewIfNeeded();
-      });
+      this.cameraRecoverySub = interval(3_000)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          this.globe.recoverEarthViewIfNeeded();
+        });
+    } catch (error) {
+      console.error('Failed to initialize globe engine', error);
+      this.connectionStatus = 'error';
+      this.connectionIssueHint =
+        'Globe engine failed to initialize. Ensure WebGL and hardware acceleration are enabled in your browser, then reload the page.';
+    } finally {
+      this.isLoading = false;
+      this.cdr.markForCheck();
+    }
   }
 
   ngOnDestroy(): void {
@@ -193,8 +201,9 @@ export class GlobeComponent implements OnInit, OnDestroy {
           },
           error: () => {
             this.connectionIssueHint = this.connectionIssueHint ||
-              'Live vessel stream is unavailable. Verify /api/stream/vessels or start backend ingestion services.';
+              'Live vessel stream is unavailable. Verify /api/stream/ships or start backend ingestion services.';
             this.enableMockTraffic();
+            this.cdr.markForCheck();
           },
         });
     }
@@ -211,6 +220,52 @@ export class GlobeComponent implements OnInit, OnDestroy {
           error: () => {
             this.connectionIssueHint = this.connectionIssueHint ||
               'Satellite stream is unavailable. This layer is optional and can remain disabled.';
+            this.cdr.markForCheck();
+          },
+        });
+    }
+  }
+
+  private loadInitialSceneSnapshot(): void {
+    const world = {
+      minLat: -90,
+      minLon: -180,
+      maxLat: 90,
+      maxLon: 180,
+    };
+
+    if (this.showFlights) {
+      this.flightService.getFlights(world)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (flights) => {
+            flights.forEach((dto) => this.globe.addOrUpdateFlight(dto));
+            this.flightCount = this.globe.entityCount.flights;
+            this.cdr.markForCheck();
+          },
+        });
+    }
+
+    if (this.showShips) {
+      this.shipService.getShips(world)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (ships) => {
+            ships.forEach((dto) => this.globe.addOrUpdateShip(dto));
+            this.shipCount = this.globe.entityCount.ships;
+            this.cdr.markForCheck();
+          },
+        });
+    }
+
+    if (this.showSatellites) {
+      this.satelliteService.getSatellites()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (satellites) => {
+            satellites.forEach((dto) => this.globe.addOrUpdateSatellite(dto));
+            this.satelliteCount = this.globe.entityCount.satellites;
+            this.cdr.markForCheck();
           },
         });
     }
@@ -474,6 +529,9 @@ export class GlobeComponent implements OnInit, OnDestroy {
     this.seedMockTraffic();
     this.usingMockData = true;
     this.connectionStatus = 'connected';
+    const counts = this.globe.entityCount;
+    this.flightCount = counts.flights;
+    this.shipCount = counts.ships;
 
     this.mockSub = interval(1_000)
       .pipe(takeUntil(this.destroy$))

@@ -24,7 +24,7 @@ ${BOLD}Digital Twin Earth — Local Runner${RESET}
 
 Usage: ./run.sh [mode] [command]
 
-Modes (optional, default: real):
+Modes (optional):
   mock      Force all feeds to mock/simulated data (no internet required)
 
 Commands:
@@ -120,7 +120,7 @@ write_env_file() {
   else
     feed_flight="${INGESTION_FEED_FLIGHT:-mock}"
     ship_feed="${INGESTION_FEED_SHIP:-mock}"
-    satellites_enabled="${SATELLITES_ENABLED:-true}"
+    satellites_enabled="${SATELLITES_ENABLED:-false}"
     spring_profiles="${SPRING_PROFILES_ACTIVE:-}"
   fi
 

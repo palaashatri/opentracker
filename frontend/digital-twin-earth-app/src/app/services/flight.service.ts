@@ -49,7 +49,7 @@ export class FlightService {
    * Stream live flight position updates via SSE.
    */
   streamFlights(): Observable<AircraftPositionDto> {
-    return this.sse.watch<AircraftPositionDto>(`${this.apiBase}/stream/flights`);
+    return this.sse.watchEvent<AircraftPositionDto>(`${this.apiBase}/stream/flights`, 'flight');
   }
 
   /**

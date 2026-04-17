@@ -15,6 +15,6 @@ export class SatelliteService {
   }
 
   streamSatellites(): Observable<SatellitePositionDto> {
-    return this.sse.watch<SatellitePositionDto>(`${this.apiBase}/stream/satellites`);
+    return this.sse.watchEvent<SatellitePositionDto>(`${this.apiBase}/stream/satellites`, 'satellite');
   }
 }

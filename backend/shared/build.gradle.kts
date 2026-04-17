@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.annotations)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.parameter.names)
     implementation(libs.jackson.datatype.jsr310)

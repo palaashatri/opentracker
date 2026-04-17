@@ -18,6 +18,8 @@ export class GlobeEngineService {
   private readonly satelliteEntities = new Map<string, any>(); // keyed by noradId
   private readonly weatherEntities   = new Map<string, any>(); // keyed by weather id
   private readonly streetEntities    = new Map<string, any>(); // keyed by osm id
+  private baseImageryLayer: any | null = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+  private nightImageryLayer: any | null = null; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private terrainEnabled = true;
   private terrainState: 'ready' | 'fallback' = 'fallback';
@@ -46,6 +48,37 @@ export class GlobeEngineService {
     // to its internal demo token which silently fails and can block globe rendering.
     Cesium.Ion.defaultAccessToken = '';
 
+    const osmCredit = new Cesium.Credit('© OpenStreetMap contributors', false);
+    const dayProvider = new Cesium.UrlTemplateImageryProvider({
+      url:          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      credit:       osmCredit,
+      maximumLevel: 19,
+    });
+    const nightProvider = new Cesium.UrlTemplateImageryProvider({
+      url:          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      credit:       osmCredit,
+      maximumLevel: 19,
+    });
+
+    // Pair a normal daylight layer with a darkened night layer so the globe visibly
+    // transitions across the terminator based on the sun position.
+    this.baseImageryLayer = new Cesium.ImageryLayer(dayProvider, {
+      dayAlpha: 1.0,
+      nightAlpha: 0.14,
+      brightness: 1.04,
+      contrast: 1.04,
+      saturation: 0.96,
+      gamma: 0.96,
+    });
+    this.nightImageryLayer = new Cesium.ImageryLayer(nightProvider, {
+      dayAlpha: 0.0,
+      nightAlpha: 0.96,
+      brightness: 0.30,
+      contrast: 1.20,
+      saturation: 0.16,
+      gamma: 1.30,
+    });
+
     // In CesiumJS 1.103+, use `baseLayer` in the constructor to set the imagery provider.
     // `imageryProvider` is deprecated and ignored. `baseLayer: false` suppresses Ion but
     // can leave the globe black if not followed correctly. Passing the ImageryLayer directly
@@ -64,15 +97,12 @@ export class GlobeEngineService {
       navigationInstructionsInitiallyVisible: false,
       scene3DOnly:                            true,
       shouldAnimate:                          true,
-      // Pass OSM as the base layer directly — suppresses Ion default and renders the map.
-      baseLayer: new Cesium.ImageryLayer(
-        new Cesium.UrlTemplateImageryProvider({
-          url:          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          credit:       new Cesium.Credit('© OpenStreetMap contributors', false),
-          maximumLevel: 19,
-        })
-      ),
+      baseLayer: this.baseImageryLayer,
     });
+
+    if (this.nightImageryLayer) {
+      this.viewer.imageryLayers.add(this.nightImageryLayer);
+    }
 
     this.applyTerrainProvider();
 
@@ -130,8 +160,18 @@ export class GlobeEngineService {
     scene.sun.show                        = true;
     scene.moon.show                       = true;
     scene.skyAtmosphere.show              = true;
+    scene.skyAtmosphere.saturationShift   = -0.18;
+    scene.skyAtmosphere.brightnessShift   = -0.16;
+    scene.globe.baseColor                 = Cesium.Color.fromCssColorString('#020611');
     scene.globe.enableLighting            = true;
-    scene.globe.atmosphereLightIntensity  = 10.0;
+    scene.globe.dynamicAtmosphereLighting = true;
+    scene.globe.dynamicAtmosphereLightingFromSun = true;
+    scene.globe.atmosphereLightIntensity  = 2.2;
+    scene.globe.lambertDiffuseMultiplier  = 0.88;
+    scene.globe.lightingFadeInDistance    = 2.0e6;
+    scene.globe.lightingFadeOutDistance   = 2.4e7;
+    scene.globe.nightFadeInDistance       = 1.0e6;
+    scene.globe.nightFadeOutDistance      = 1.2e7;
     scene.globe.showGroundAtmosphere      = true;
     scene.logarithmicDepthBuffer          = true;
     // depthTestAgainstTerrain requires a working terrain provider with loaded tiles.
@@ -1047,5 +1087,7 @@ export class GlobeEngineService {
     this.trackEntities.clear();
     this.satelliteEntities.clear();
     this.weatherEntities.clear();
+    this.baseImageryLayer = null;
+    this.nightImageryLayer = null;
   }
 }

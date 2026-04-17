@@ -25,14 +25,14 @@ export class ShipService {
       .set('minLon', bbox.minLon.toString())
       .set('maxLon', bbox.maxLon.toString());
 
-    return this.http.get<VesselPositionDto[]>(`${this.apiBase}/vessels`, { params });
+    return this.http.get<VesselPositionDto[]>(`${this.apiBase}/ships`, { params });
   }
 
   /**
    * Fetch a single vessel's latest position.
    */
   getShip(mmsi: string): Observable<VesselPositionDto> {
-    return this.http.get<VesselPositionDto>(`${this.apiBase}/vessels/${mmsi}`);
+    return this.http.get<VesselPositionDto>(`${this.apiBase}/ships/${mmsi}`);
   }
 
   /**
@@ -43,14 +43,14 @@ export class ShipService {
       .set('from', from.toISOString())
       .set('to', to.toISOString());
 
-    return this.http.get<TrackDto>(`${this.apiBase}/vessels/${mmsi}/track`, { params });
+    return this.http.get<TrackDto>(`${this.apiBase}/ships/${mmsi}/track`, { params });
   }
 
   /**
    * Stream live vessel position updates via SSE.
    */
   streamShips(): Observable<VesselPositionDto> {
-    return this.sse.watch<VesselPositionDto>(`${this.apiBase}/stream/vessels`);
+    return this.sse.watchEvent<VesselPositionDto>(`${this.apiBase}/stream/ships`, 'ship');
   }
 
   /**

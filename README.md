@@ -50,7 +50,15 @@ An open-source, MIT-licensed real-time 3D Earth digital twin with live flight, v
 
 No API keys needed in mock mode.
 
-### Run in mock mode (no internet required)
+### Run locally (default: mock data, no internet required)
+
+```bash
+./run.sh
+```
+
+Plain `./run.sh` starts with mock flights, mock ships, and mock satellites.
+
+### Run in mock mode explicitly
 
 ```bash
 ./run.sh mock up
@@ -113,7 +121,7 @@ All configuration is environment-variable driven. No keys are committed.
 | --- | --- | --- |
 | `INGESTION_FEED_FLIGHT` | `mock` | `mock`, `opensky`, or `adsb` |
 | `INGESTION_FEED_SHIP` | `mock` | `mock`, `aisstream`, or `aishub` |
-| `SATELLITES_ENABLED` | `true` | `true` = Celestrak TLE feed; `false` = mock |
+| `SATELLITES_ENABLED` | `false` | `true` = Celestrak TLE feed; `false` = mock |
 | `AISSTREAM_API_KEY` | — | Required when `INGESTION_FEED_SHIP=aisstream` |
 | `OPENSKY_USERNAME` | — | OpenSky credential (increases rate limit) |
 | `OPENSKY_PASSWORD` | — | OpenSky credential |

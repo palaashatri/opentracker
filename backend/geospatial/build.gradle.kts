@@ -12,6 +12,8 @@ dependencies {
     implementation(libs.spring.boot.starter.data.redis)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.postgresql.driver)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.annotations)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.parameter.names)

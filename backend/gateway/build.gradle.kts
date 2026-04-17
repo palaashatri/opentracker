@@ -9,6 +9,8 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.kafka)
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.annotations)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.parameter.names)

@@ -35,8 +35,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .resourceChain(true);
     }
 
-    @Bean
-    public RestClient geospatialClient() {
+    @Bean("geospatialRestClient")
+    public RestClient geospatialRestClient() {
         return RestClient.builder()
                 .baseUrl(properties.getGeospatialUrl())
                 .build();

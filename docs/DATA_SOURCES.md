@@ -53,7 +53,7 @@ Real and mock data sources for Digital Twin Earth
 ### Celestrak (free, no key required)
 - **URL:** `https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle`
 - **License:** Public domain (US government data)
-- **Enable:** `SATELLITES_ENABLED=true` (default)
+- **Enable:** `SATELLITES_ENABLED=true`
 - **Refresh cadence:** every 3 hours
 - **Data:** ~10,000 active satellites with NORAD IDs, names, TLE lines
 - **Propagation:** Custom SGP4 propagator (Keplerian + GMST rotation, WGS-84 geodetic)
@@ -67,7 +67,7 @@ Real and mock data sources for Digital Twin Earth
 - Orbital velocity from vis-viva equation: `v = sqrt(μ * (2/r - 1/a))`
 
 ### Mock satellites
-- **Enable:** `SATELLITES_ENABLED=false` + mock profile
+- **Enable:** `SATELLITES_ENABLED=false` (default local runner behavior)
 - N satellites in random circular orbits (LEO/MEO/GEO bands)
 - Two-body circular orbit math, deterministic seed
 
@@ -99,7 +99,7 @@ SATELLITES_ENABLED=true \
 ./run.sh up
 
 # No internet required (CI/offline demo)
-SPRING_PROFILES_ACTIVE=mock ./run.sh up
+./run.sh
 
 # High-load Zing stress test
 SPRING_PROFILES_ACTIVE=mock \

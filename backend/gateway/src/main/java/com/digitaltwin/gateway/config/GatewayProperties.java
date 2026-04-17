@@ -1,10 +1,8 @@
 package com.digitaltwin.gateway.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 @ConfigurationProperties(prefix = "gateway")
-@Component
 public class GatewayProperties {
 
     private String geospatialUrl = "http://localhost:8083";
