@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package com.aetheris.shared.proto;
+
+option java_multiple_files = true;
+option java_package = "com.aetheris.shared.proto";
+option java_outer_classname = "GeoEntityProto";
+
+message GeoEntity {
+  enum EntityType {
+    UNKNOWN = 0;
+    FLIGHT = 1;
+    SHIP = 2;
+    SATELLITE = 3;
+  }
+
+  string id = 1;                  // Unique identifier (ICAO, MMSI, NORAD ID)
+  EntityType type = 2;            // FLIGHT, SHIP, SATELLITE
+  double latitude = 3;
+  double longitude = 4;
+  float altitude = 5;             // In meters
+  float velocity = 6;             // In knots or km/s
+  float heading = 7;              // 0-360 degrees
+  int64 timestamp = 8;            // Epoch ms
+  bytes compressed_metadata = 9;  // Lazy-loaded metadata specific to type
+}

@@ -1,0 +1,31 @@
+type Query {
+    entityMetadata(id: ID!): EntityMetadata
+}
+
+type EntityMetadata {
+    id: ID!
+    name: String
+    country: String
+    flight: FlightMetadata
+    ship: ShipMetadata
+    satellite: SatelliteMetadata
+}
+
+type FlightMetadata {
+    airline: String
+    origin: String
+    destination: String
+    aircraftType: String
+}
+
+type ShipMetadata {
+    vesselName: String
+    vesselType: String
+    callsign: String
+}
+
+type SatelliteMetadata {
+    intlDesignator: String
+    launchDate: String
+    owner: String
+}
